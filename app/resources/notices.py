@@ -1,39 +1,29 @@
-from flask import Blueprint, request, Response
+from flask import request, Response
+from flask_restful import Resource
 from database.models import Notice
 
-notices = Blueprint('notices', __name__)
+class NoticesApi(Resource):
+    def get(self):
+        notices = Notice.objects.all()
+        return {'notices': [notice.to_json() for notice in notices]}
 
-@notices.route('/notices', methods=['GET'])
-def get_notices():
-    notices = Notice.objects.all()
-    return Response(notices.to_json(), mimetype='application/json', status=200)
+    def post(self):
+        data = request.get_json()
+        notice = Notice(**data)
+        notice.save()
+        return {'notice': notice.to_json()}
 
-@notices.route('/notices', methods=['POST'])
-def create_notice():
-    data = request.get_json()
-    notice = Notice(
-        title=data['title'],
-        content=data['content']
-    )
-    notice.save()
-    return Response(notice.to_json(), mimetype='application/json', status=201)
-
-@notices.route('/notices/<notice_id>', methods=['GET'])
-def get_notice(notice_id):
-    notice = Notice.objects.get(id=notice_id)
-    return Response(notice.to_json(), mimetype='application/json', status=200)
-
-@notices.route('/notices/<notice_id>', methods=['PUT'])
-def update_notice(notice_id):
-    data = request.get_json()
-    notice = Notice.objects.get(id=notice_id)
-    notice.title = data['title']
-    notice.content = data['content']
-    notice.save()
-    return Response(notice.to_json(), mimetype='application/json', status=200)
-
-@notices.route('/notices/<notice_id>', methods=['DELETE'])
-def delete_notice(notice_id):
-    notice = Notice.objects.get(id=notice_id)
-    notice.delete()
-    return Response(status=204)
+class NoticeApi(Resource):
+    def delete(self, id):
+        data = request.get_json()
+        Notice.objects(id=data['id']).delete()
+        return {'message': 'notice deleted'}
+    
+    def put(self, id):
+        data = request.get_json()
+        Notice.objects(id=data['id']).update(**data)
+        return {'message': 'notice updated'}
+    
+    def get(self, id):
+        notice = Notice.objects(id=id).to_json()
+        return {'notice': notice.to_json()}
