@@ -1,58 +1,20 @@
-from flask import Flask, request, Response
+from flask import Flask
+from flask_restful import Api
 from database.db import initialize_db
-from database.models import Notice
+from resources.routes import initialize_routes
 
 app = Flask(__name__)
+api = Api(app)
 
 app.config['MONGODB_SETTINGS'] = {
     'host': 'mongodb://mongo/notices'
 }
 
 initialize_db(app)
+initialize_routes(api)
 
 @app.route('/')
 def hello():
-    return {'hello': 'world5'}
+    return {'version': '0.0.6'}
 
-@app.route('/notices', methods=['GET'])
-def get_notices():
-    notices = Notice.objects.all()
-    return Response(notices.to_json(), mimetype='application/json', status=200)
-
-@app.route('/notices', methods=['POST'])
-def create_notice():
-    data = request.get_json()
-    notice = Notice(
-        title=data['title'],
-        content=data['content']
-    )
-    notice.save()
-    return Response(notice.to_json(), mimetype='application/json', status=201)
-
-@app.route('/notices/<notice_id>', methods=['GET'])
-def get_notice(notice_id):
-    notice = Notice.objects.get(id=notice_id)
-    return Response(notice.to_json(), mimetype='application/json', status=200)
-
-@app.route('/notices/<notice_id>', methods=['PUT'])
-def update_notice(notice_id):
-    data = request.get_json()
-    notice = Notice.objects.get(id=notice_id)
-    notice.title = data['title']
-    notice.content = data['content']
-    notice.save()
-    return Response(notice.to_json(), mimetype='application/json', status=200)
-
-@app.route('/notices/<notice_id>', methods=['DELETE'])
-def delete_notice(notice_id):
-    notice = Notice.objects.get(id=notice_id)
-    notice.delete()
-    return Response(status=204)
-
-notice = Notice(
-    title='test',
-    content='test'
-)
-notice.save()
-print(Notice.objects.all())
 app.run(host='0.0.0.0')
