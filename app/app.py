@@ -7,7 +7,7 @@ from resources.routes import initialize_routes
 
 
 app = Flask(__name__)
-app.config.from_envvar('JWT_SECRET_KEY')
+app.config.from_envvar('JWT_SECRET_KEY', silent=True)
 
 api = Api(app)
 

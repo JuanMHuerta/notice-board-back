@@ -11,6 +11,8 @@ services:
       - mongo
     networks:
       - host
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
 
   mongo:
     image: mongo:latest
